@@ -1,0 +1,62 @@
+FruitPeeler v0.37 readme.txt
+
+Fruitpeeler is a archive extracting tool with GUI written in perl-tk.
+FruitPeeler utilizes unrar/7z/zip found on the system.
+The user has the option to add passwords in a text box to easy the
+extraction and decryption process.
+
+What fruitpeeler is not: FruitPeeler is not a cracker/bruteforce tool,
+for that purpose fruitpeeler is too slow anyway.
+
+
+Installation & upgrade
+
+  - Installation using command-lines and wget
+       wget https://github.com/bitterfruit/fruitpeeler-perltk/archive/master.zip
+       unzip master.zip && rm -v master.zip
+       cd fruitpeeler-perltk-master/
+       sudo ./install.sh
+         (drop the sudo on Cygwin)
+
+    or
+
+  - Click the "Download ZIP" button on GitHub to download FruitPeeler.
+       https://github.com/bitterfruit/fruitpeeler-perltk
+
+  Ubuntu:
+    - Extract the zip file and run the install script:
+         sudo ./install.sh
+    - The script should now ask you yes or no on packages to install.
+      These packages are required. Answering no will abort the script:
+         packages: perl, perl-tk, p7zip-full.
+
+      Note:
+        - On RAR versions less than 4.00, and the unrar-free package:
+          Rar v3.96 doesn't handle weird chars very well (weird passwords).
+        - package zenity probably comes with ubuntu. Without zenity the
+          ChooseDirectory dialog windows will look uuglaay.
+
+  Cygwin:
+    - Extract the zip file and run the install script:
+         ./install.sh
+    - The script will tell you what packages you are missing, if any.
+      With Cygwin's Setup-x86.exe you will need to get the following packages:
+         Packages: perl, perl-tk, xinit, p7zip. Optional: perl-Win32-GUI
+
+    - You will also need to install WinRAR from rarlab.com if you haven't
+      got it. WinRAR from rarlab.com is not 100% compatible with Cygwin.
+      Known problems with WinRAR and Cygwin: RAR archives with doublequotes used
+      in passwords.
+          Advanced Tip: Download the unrar sourcode from rarlab.com's
+      extras section. Compile unrar.exe and move it to the root of your home
+      directory, or install it. Now you have a 100% cygwin compatible and
+      updates unrar program that handles passwords with doublequotes.
+      Assuming that you have installed the package make and gnu-gcc, this
+      is how you can compile and install it:
+          make
+          make install
+
+Uninstallation (Cygwwin & ubuntu):
+
+    Run the uninstall.sh script. Use sudo on ubuntu.
+
