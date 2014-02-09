@@ -24,7 +24,7 @@ use MIME::Base64;
 
 # Global Variables
 
-my $version = "0.02 (20140209)";
+my $version = "0.03 (20140209)";
 my $VerboseLevel = 0;  # show verbose output, 0=none, 3=shitload
 foreach (@ARGV) {
   $VerboseLevel = $1 if /^(?:--verbose=|-v)(\d+)/ && $1<4;
@@ -282,9 +282,6 @@ my $mbupdate = $mbcinfo -> command ( -label =>"Update FruitCheck!",
 
 # Init
 
-$CSVFILE1 = "/cygdrive/f/new/brandi/xenia_missing.csv";
-$file1_path->configure(-text=>"xenia_missing.csv");
-count_entries("file1",$CSVFILE1);
 
 MainLoop;
 
