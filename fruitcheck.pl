@@ -66,6 +66,8 @@ if ( isCygwin() && ! -f "/tmp/.X0-lock" ) {
 }
 my $mw = new MainWindow(title=>"FruitCheck $version");
 $mw->resizable(0,0); # no-resizeable
+$mw->optionAdd('*font', 'Helvetica 9');
+
 my $files_frame = $mw -> Frame();
 my $file1_label1  = $files_frame -> Label(-text=>"CSV file 1:");
 my $file1_path    = $files_frame -> Button(-width=>50, -height=>1,-relief=>"flat",
@@ -96,7 +98,7 @@ my $grid = $lframe->Scrolled(
         -height     => 20,
         -padx       => 4,
         -background => 'white', 		#Background color
-        -browsecmd    => sub { grid_doubleclick(shift) },
+        -browsecmd    => \&grid_browsecmd,
     )->pack(-side=>'top', -fill=>'both', -expand=>1);
 
 my $optframe = $mw->LabFrame(
@@ -108,7 +110,7 @@ my $chb_hideiden = $optframe -> Checkbutton(
   -text=>"Hide Identical",
   -state=>"normal",
   -variable=>\$opt{'hideidentical'},
-  -command =>sub { command_hideidentical(); compare_csvs($CSVFILE1,$CSVFILE2); });
+  -command =>\&command_hideidentical );
 my $chb_igndesc  = $optframe -> Checkbutton(
   -text=>"Ignore Descriptions",
   -state=>"disabled",
@@ -299,9 +301,10 @@ sub command_hideidentical {
     $chb_igndesc -> configure(-state=>"normal");
     $chb_ignpath -> configure(-state=>"normal");
   }
+  compare_csvs($CSVFILE1,$CSVFILE2);
 }
 
-sub grid_doubleclick {
+sub grid_browsecmd {
   my $id = shift;
   return if !defined($grid);
   $grid2->delete('all');
@@ -326,11 +329,15 @@ sub browse_callback {
   my $path;
   $path = $CSVFILE1 if ($file12 eq "file1");
   $path = $CSVFILE2 if ($file12 eq "file2");
+  $path = $CSVFILE1 if $path eq "" && ($file12 eq "file2");
+  $path = $CSVFILE2 if $path eq "" && ($file12 eq "file1");
+  my ($startdir) = ($path =~ /^(.*\/).*?$/);
+  $startdir = "" if !defined($startdir);
   print $path."\n\n";
   
   my $hasWin32GUI = 0; # has Win32::GUI test
   if (!isCygwin() && (-f "/usr/bin/zenity") ) {
-    open(PS, "/usr/bin/zenity --file-selection --directory --title=\"Select a Source Directory\" --window-icon=/usr/share/pixmaps/ZIP-File-icon_48.png |") || die "Failed $!\n";
+    open(PS, "/usr/bin/zenity --file-selection --filename='$startdir' --file-filter='CSV files (*.csv) | *.csv' --file-filter='All files (*) | *' --title=\"Select a Source Directory\" --window-icon=/usr/share/pixmaps/ZIP-File-icon_48.png |") || die "Failed $!\n";
     $path=<PS>;
     chomp $path;
   }
@@ -338,13 +345,8 @@ sub browse_callback {
     #http://stackoverflow.com/questions/251694/how-can-i-check-if-i-have-a-perl-module-before-using-it
 		eval {
       require Win32::GUI;
-      $path = $CSVFILE1 if $path eq "" && ($file12 eq "file2");
-      $path = $CSVFILE2 if $path eq "" && ($file12 eq "file1");
-      my ($startdir) = ($path =~ /^(.*\/).*?$/);
-      $startdir = "" if !defined($startdir);
-      print $path."\n\n";
       $startdir = win_path($startdir) if $path ne "";
-      print $startdir."\n";
+      print $startdir."\n";  print $path."\n\n";
       $path = Win32::GUI::BrowseForFolder( -root => 0x0000 , -editbox => 1,
                                            -directory => $startdir, -title => "Select a Source Directory",
                                            -includefiles=>1, -addexstyle =>"WS_EX_TOPMOST");
@@ -359,7 +361,7 @@ sub browse_callback {
       $hasWin32GUI=1;
     }
     my @types = (["CSV files", [qw/.csv/]], ["All files", '*'] );
-    $path = $mw->getOpenFile(-filetypes => \@types) if !$hasWin32GUI;
+    $path = $mw->getOpenFile(-initialdir=>$startdir, -filetypes => \@types) if !$hasWin32GUI;
   }
   $path  = encode("windows-1252", $path);
   return if not isCSVfile($path);
@@ -422,6 +424,7 @@ sub compare_csvs {
   printdeb(1,"fruitcheck::compare_csvs($csvfiles[0],$csvfiles[1])\n");
   return if (isCSVfile($csvfiles[0])==0 or isCSVfile($csvfiles[1])==0);
   $grid->delete('all');
+  $grid2->delete('all');
   print $csvfiles[0]."\n";
   print $csvfiles[1]."\n";
   my $count=0;
@@ -548,7 +551,7 @@ sub update_stats {
 }
 
 sub isCSVfile {
-  my $file = shift;
+  my $file = shift || "";
   printdeb(1,"fruitcheck::isCSVfile($file) -> ");
   my $returnvalue=0;
   $returnvalue =  1 if ($file =~ /.csv$/i && -f $file);
