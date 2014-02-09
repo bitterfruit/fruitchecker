@@ -24,7 +24,7 @@ use MIME::Base64;
 
 # Global Variables
 
-my $version = "0.01 (20140209)";
+my $version = "0.02 (20140209)";
 my $VerboseLevel = 0;  # show verbose output, 0=none, 3=shitload
 foreach (@ARGV) {
   $VerboseLevel = $1 if /^(?:--verbose=|-v)(\d+)/ && $1<4;
@@ -209,6 +209,76 @@ for(0..scalar @headers_details - 1) {
                   -headerbackground => 'gray');
 }
 $grid2->delete('all');
+
+
+# Menu
+
+my $menubar = $mw -> Menu(-tearoff=>1);
+$mw -> configure(-menu => $menubar);
+my $mbcinfo = $menubar -> cascade(-label=>"File", -underline=>0,
+                                  -tearoff => 0);
+
+my $mbupdate = $mbcinfo -> command ( -label =>"Update FruitCheck!",
+  -underline => 0, -command => sub {
+  my $raw = http_get("https://raw2.github.com/bitterfruit/fruitchecker/master/VERSION");
+
+  if ($raw eq "") {
+    $mw -> messageBox(-type=>"ok",
+    -message=>"Unable to update FruitCheck.\n");
+    return;
+  }
+  my ($onlver,$onlmd5,$url) = split ",", $raw;
+  if ($onlver eq $version) {
+    $mw -> messageBox(-type=>"ok",
+    -message=>"FruitCheck is at latest version $version.\n");
+    return;
+  }
+  my $newfile = http_get($url);
+  if ($newfile eq "") {
+    $mw -> messageBox(-type=>"ok",
+    -message=>"Unable to update FruitCheck.\n");
+    return;
+  }
+  my $path = "/usr/bin";
+  $path = "/usr/local/bin" if -d "/usr/local/bin";
+  print "writing ". $path."/fruitcheck_new"."\n";
+  open(FILE,">","/tmp/fruitcheck_new") or die $!;
+  binmode(FILE);
+  print FILE $newfile;
+  close(FILE);
+  system("chmod 755 /tmp/fruitcheck_new");
+  open(PS, "md5sum /tmp/fruitcheck_new 2>&1 |") || die "Failed $!\n";
+  my $md5local = "";
+  while(<PS>) {
+    $md5local = $1 if /([a-f0-9]+)/;
+  }
+  close(PS);
+  print "$md5local $onlmd5\n";
+  if ($md5local eq $onlmd5) {
+    my $sudo = "";
+    if (!isCygwin()) {
+      system( "gksu 'rm -v ".$path."/fruitcheck'" ) if -f $path."/fruitcheck";
+      system( "gksu 'rm -v /usr/bin/fruitcheck'" ) if -f "/usr/bin/fruitcheck";
+      system( "gksu 'mv -v /tmp/fruitcheck_new ".$path."/fruitcheck'");
+    }
+    else {
+      system( "rm -v ".$path."/fruitcheck" ) if -f $path."/fruitcheck";
+      system( "rm -v /usr/bin/fruitcheck" ) if -f "/usr/bin/fruitcheck";
+      system( "mv -v /tmp/fruitcheck_new ".$path."/fruitcheck");
+    }
+    #chmod(755, $path."/fruitcheck");
+    $mw -> messageBox(-type=>"ok",
+        -message=>"FruitCheck updated. Press OK to restart FruitCheck.");
+    system("fruitcheck&"); exit;
+  }
+  else {
+    $mw -> messageBox(-type=>"ok",
+    -message=>"MD5 sums doesn't match. Update fail!");
+      system( "rm -v /tmp/fruitcheck_new" );
+  }
+  return;
+});
+
 
 # Init
 
