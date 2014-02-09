@@ -220,7 +220,7 @@ my $mbcinfo = $menubar -> cascade(-label=>"File", -underline=>0,
 
 my $mbupdate = $mbcinfo -> command ( -label =>"Update FruitCheck!",
   -underline => 0, -command => sub {
-  my $raw = http_get("https://raw2.github.com/bitterfruit/fruitchecker/master/VERSION");
+  my $raw = http_get("https://raw.github.com/bitterfruit/fruitchecker/master/VERSION");
 
   if ($raw eq "") {
     $mw -> messageBox(-type=>"ok",
