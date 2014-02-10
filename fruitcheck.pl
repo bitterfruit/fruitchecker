@@ -44,6 +44,7 @@ my %opt;
 $opt{'hideidentical'} = 0;
 $opt{'ignoredescriptions'} = 0;
 $opt{'ignorepathnames'} = 0;
+$opt{'tkbrowser'} = 0;
 #$opt{'saveascsvchoices'} = 0;
 my %stats;
 $stats{'onlyin1'} = 0;
@@ -219,7 +220,7 @@ my $menubar = $mw -> Menu(-tearoff=>1);
 $mw -> configure(-menu => $menubar);
 my $mbcinfo = $menubar -> cascade(-label=>"File", -underline=>0,
                                   -tearoff => 0);
-
+$mbcinfo -> checkbutton(-label=>"Use Tk's file browser", -variable=>\$opt{'tkbrowser'} );
 my $mbupdate = $mbcinfo -> command ( -label =>"Update FruitCheck!",
   -underline => 0, -command => sub {
   my $raw = http_get("https://raw.github.com/bitterfruit/fruitchecker/master/VERSION");
@@ -280,6 +281,7 @@ my $mbupdate = $mbcinfo -> command ( -label =>"Update FruitCheck!",
   }
   return;
 });
+$mbcinfo -> command(-label =>"Exit", -underline => 1, -command => sub { exit } );
 
 
 # Init
@@ -336,29 +338,31 @@ sub browse_callback {
   print $path."\n\n";
   
   my $hasWin32GUI = 0; # has Win32::GUI test
-  if (!isCygwin() && (-f "/usr/bin/zenity") ) {
+  if (!isCygwin() && $opt{'tkbrowser'}==0 && (-f "/usr/bin/zenity") ) {
     open(PS, "/usr/bin/zenity --file-selection --filename='$startdir' --file-filter='CSV files (*.csv) | *.csv' --file-filter='All files (*) | *' --title=\"Select a Source Directory\" --window-icon=/usr/share/pixmaps/ZIP-File-icon_48.png |") || die "Failed $!\n";
     $path=<PS>;
     chomp $path;
   }
   else {
-    #http://stackoverflow.com/questions/251694/how-can-i-check-if-i-have-a-perl-module-before-using-it
-		eval {
-      require Win32::GUI;
-      $startdir = win_path($startdir) if $path ne "";
-      print $startdir."\n";  print $path."\n\n";
-      $path = Win32::GUI::BrowseForFolder( -root => 0x0000 , -editbox => 1,
+    if ( $opt{'tkbrowser'}==0 ) {
+      #http://stackoverflow.com/questions/251694/how-can-i-check-if-i-have-a-perl-module-before-using-it
+		  eval {
+        require Win32::GUI;
+        $startdir = win_path($startdir) if $path ne "";
+        print $startdir."\n";  print $path."\n\n";
+        $path = Win32::GUI::BrowseForFolder( -root => 0x0000 , -editbox => 1,
                                            -directory => $startdir, -title => "Select a Source Directory",
                                            -includefiles=>1, -addexstyle =>"WS_EX_TOPMOST");
-    };
-    unless($@)
-    {
-      $path = cyg_path($path);
-      printdeb(1, "Gui Loaded successfully $path\n");
-      if ( $path ne "" ) { # use ne for string, and != for numerics
-        $path  = encode("windows-1252", $path);
+      };
+      unless($@)
+      {
+        $path = cyg_path($path);
+        printdeb(1, "Gui Loaded successfully $path\n");
+        if ( $path ne "" ) { # use ne for string, and != for numerics
+          $path  = encode("windows-1252", $path);
+        }
+        $hasWin32GUI=1;
       }
-      $hasWin32GUI=1;
     }
     my @types = (["CSV files", [qw/.csv/]], ["All files", '*'] );
     $path = $mw->getOpenFile(-initialdir=>$startdir, -filetypes => \@types) if !$hasWin32GUI;
