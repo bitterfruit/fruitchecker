@@ -6,17 +6,19 @@ use warnings;
 use Tk;
 use Tk::Adjuster;
 use Tk::BrowseEntry;
-#use Tk::DialogBox;
-#use Tk::TList;
 use Tk::HList;         #The hierarchical list module
 require Tk::ItemStyle;
 use Tk::LabFrame;      #The frame module
 
 #require Tk::ItemStyle;
 #use Tk::ProgressBar;
-use File::Find;
-use File::Path;
-use File::Copy;
+use FileHandle;
+use Cwd 'abs_path';
+use lib qw( blib/lib lib );
+use Archive::Zip qw( :ERROR_CODES :CONSTANTS );
+#use File::Find;
+#use File::Path;
+#use File::Copy;
 use Encode; #encode lang
 # use utf8;
 use MIME::Base64;
@@ -466,18 +468,51 @@ sub command_createcsv {
     -relief  => "sunken", # raised, sunken, flat, ridge, solid, or groove
 
   )->pack( -side => 'left' );
-  $mwtl -> Button (
+  my $btn_create = $mwtl -> Button (
     -text => "Create",
+  )->pack( -side => 'left' );
+  $btn_create -> configure(
     -command => sub {
       my $path = $btn_path->cget(-text);
-      if ( $path ne "" && -d "$path") {
-        printdeb(1,"Do something to directory\n");
+      if ( $path ne "" && -d $path) {
+        printdeb(1,"Do something to $path \n");
+        $btn_create -> configure( -state=>"disabled");
+        $mwtl -> update();
+        my %filehash;
+        list_files_recursive($path,\%filehash);
+        printdeb(2,"filehash size: ". scalar(keys %filehash) ."\n");
+        foreach my $filepath ( sort keys %filehash ) {
+          my $fh = FileHandle->new();
+          if ( !$fh->open( $filepath, 'r' ) ) {
+              warn "$0: $!\n";
+              next;
+          }
+          binmode($fh);
+          my $buffer;
+          my $bytesRead;
+          my $crc = 0;
+          while ( $bytesRead = $fh->read( $buffer, 32768 ) ) {
+              $crc = Archive::Zip::computeCRC32( $buffer, $crc );
+          }
+          $crc = uc(sprintf( "%08x", $crc ));
+          my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,
+              $atime,$mtime,$ctime,$blksize,$blocks) = stat($filepath);
+          my $relative_path = "\\";
+          $filepath =~ s/\//\\/g;
+          if ($filepath =~ /\\/g) {
+            ($relative_path, $filepath) = ($filepath =~ /^(.*\\)(.*?)$/g);
+            $relative_path = "\\".$relative_path;
+          }
+          print      "$filepath,$size,$crc,$relative_path,\n";
+          #print FILE "$file,$size,$crc,$relative_path,\n";
+        }
+        $btn_create -> configure( -state=>"active");
       }
     }
-  )->pack( -side => 'left' );
-  $btn_path -> configure (
+  );
+  $btn_path -> configure ( # late configuration of this button.
     -command => sub{ 
-      my $path = browseforfolder("");
+      my $path = browseforfolder( $btn_path->cget(-text) );
       $btn_path->configure(-text=>$path);
       print "Path $path\n";
     },
@@ -491,7 +526,7 @@ sub browseforfolder {
   my $path = "";
   my $hasWin32GUI = 0; # has Win32::GUI test
   if (!isCygwin() && $opt{'tkbrowser'}==0 && (-f "/usr/bin/zenity") ) {
-    open(PS, "/usr/bin/zenity --file-selection --directory --filename='$startdir' --title=\"Select a Source Directory\" --window-icon=/usr/share/pixmaps/ZIP-File-icon_48.png |") || die "Failed $!\n";
+    open(PS, "/usr/bin/zenity --file-selection --directory --filename='$startdir' --title=\"Select a Directory\" --window-icon=/usr/share/pixmaps/ZIP-File-icon_48.png |") || die "Failed $!\n";
     $path=<PS>;
     chomp $path;
     return $path;
@@ -501,11 +536,11 @@ sub browseforfolder {
       #http://stackoverflow.com/questions/251694/how-can-i-check-if-i-have-a-perl-module-before-using-it
       eval {
         require Win32::GUI;
-        $startdir = win_path($startdir) if $path ne "";
-        print $startdir."\n";  print $path."\n\n";
+        $startdir = win_path($startdir) unless $startdir eq "";
+        print "win32 gui startdir: $startdir\n";  print $path."\n\n";
         $path = Win32::GUI::BrowseForFolder( -root => 0x0000 , -editbox => 1,
-                                           -directory => $startdir, -title => "Select a Source Directory",
-                                           -includefiles=>1, -addexstyle =>"WS_EX_TOPMOST");
+                                           -directory => $startdir, -title => "Select a Directory",
+                                           -includefiles=>0, -addexstyle =>"WS_EX_TOPMOST");
       };
       unless($@)
       {
@@ -519,7 +554,10 @@ sub browseforfolder {
       }
     }
     my @types = (["CSV files", [qw/.csv/]], ["All files", '*'] );
-    $path = $mw->getOpenFile(-initialdir=>$startdir, -filetypes => \@types) if !$hasWin32GUI;
+    $path = $mw->chooseDirectory(
+      -initialdir=>$startdir, 
+      -title=>"Select a Directory"
+    ) if !$hasWin32GUI;
     return $path;
   }
 }
@@ -741,6 +779,37 @@ sub http_get {
             "3. Install the curl package.\n";
       return "";
     }
+  }
+}
+
+sub list_files_recursive {
+  my ($path, $filehash, $maxdepth, $level) = @_;
+  $path =~ s/([^\/])$/$1\//;
+  my $nkeys = keys %{$filehash};
+  $maxdepth = 99 if !defined($maxdepth);
+  $level = 0 if !defined($level);
+  if ($level>0) {
+    printdeb (3, "fr..::list_files_recursive() $level $nkeys -> $path\n");
+  }
+  else {
+    printdeb (2, "fr..::list_files_recursive() $level $nkeys -> $path\n");
+  }
+  return if $level >= $maxdepth;
+  return if $nkeys > 1000;
+  my @dirs =();
+  opendir(DIR, $path) or print "Error: $!\n";
+  while (defined(my $dir = readdir(DIR))) {
+    next if $dir =~ /^\.$|^\.\.$/ig;
+    if ( -d $path.$dir) {
+      push @dirs, $dir;
+    }
+    elsif (-f $path.$dir ) {
+        $filehash->{"$path"."$dir"}='';
+    }
+  }
+  closedir(DIR);
+  foreach my $dir (@dirs) {
+    list_files_recursive($path.$dir."/", $filehash, $maxdepth, $level+1);
   }
 }
 
