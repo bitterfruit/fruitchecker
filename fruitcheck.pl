@@ -8,9 +8,9 @@ use Tk::Adjuster;
 use Tk::BrowseEntry;
 #use Tk::DialogBox;
 #use Tk::TList;
-use Tk::HList; 				#The hierarchical list module
+use Tk::HList;         #The hierarchical list module
 require Tk::ItemStyle;
-use Tk::LabFrame;			#The frame module
+use Tk::LabFrame;      #The frame module
 
 #require Tk::ItemStyle;
 #use Tk::ProgressBar;
@@ -65,169 +65,253 @@ if ( isCygwin() && ! -f "/tmp/.X0-lock" ) {
   while( -f "/tmp/.X0-lock" ) { sleep(1); }
   sleep(1);
 }
-my $mw = new MainWindow(title=>"FruitCheck $version");
+my $mw = new MainWindow( title => "FruitCheck $version" );
 $mw->resizable(0,0); # no-resizeable
 $mw->optionAdd('*font', 'Helvetica 9');
 
-my $files_frame = $mw -> Frame();
-my $file1_label1  = $files_frame -> Label(-text=>"CSV file 1:");
-my $file1_path    = $files_frame -> Button(-width=>50, -height=>1,-relief=>"flat",
--command=>sub{ browse_callback("file1"); }, -text=>"" );
-#my $file1_entries = $files_frame -> Text(-width=>3, -height=>1, -relief=>"flat",-state=>"disabled",-variable=>\$file1count);
-my $file1_entries = $files_frame -> Label(-text=>"0");
-my $file1_label2  = $files_frame -> Label(-text=>"entries");
-my $file2_label1  = $files_frame -> Label(-text=>"CSV file 2:");
-my $file2_path    = $files_frame -> Button(-width=>50, -height=>1,-relief=>"flat",
--command=>sub{ browse_callback("file2"); }, -text=>"" );
-#my $file2_entries = $files_frame -> Text(-width=>3, -height=>1,-relief=>"flat",-state=>"disabled",-variable=>\$file1count);
-my $file2_entries = $files_frame -> Label(-text=>"0");
-my $file2_label2  = $files_frame -> Label(-text=>"entries");
+my $files_frame   = $mw -> Frame();
+my $file1_label1  = $files_frame -> Label( -text=>"CSV file 1:" );
+my $file1_path    = $files_frame -> Button(
+  -width   => 50,
+  -height  => 1,
+  -relief  => "sunken",
+  -command => sub{ browse_callback("file1"); },
+  -text    => ""
+);
+my $file1_entries = $files_frame -> Label( -text => "0"          );
+my $file1_label2  = $files_frame -> Label( -text => "entries"    );
+my $file2_label1  = $files_frame -> Label( -text => "CSV file 2:");
+my $file2_path    = $files_frame -> Button(
+  -width   => 50,
+  -height  => 1,
+  -relief  => "sunken",
+  -command => sub{ browse_callback("file2"); },
+  -text    => ""
+);
+my $file2_entries = $files_frame -> Label( -text=>"0"       );
+my $file2_label2  = $files_frame -> Label( -text=>"entries" );
 
 # the HList: http://usadev.wordpress.com/2010/04/25/creating-gui-in-tk/
 my $lframe = $mw->LabFrame(
-		-label => "Report", #A frame title
-		-height => 130,   #Frame height
-		#-width 	=> 353,   #Frame width
-	);
-my @headers_report = ( "Filename", "Compare Results");#Columns headers
+  -label  => "Report", #A frame title
+  -height => 130,   #Frame height
+  #-width   => 353,   #Frame width
+);
+my @headers_report = ( "Filename", "Compare Results"); #Columns headers
 my $grid = $lframe->Scrolled(
-        'HList',
-        -head       => 1, 		#Enabling columns headers
-        -columns    => scalar @headers_report, #Number of columns
-        -scrollbars => "oe", 		#A scrollbar is enabled
-        -width      => 40,
-        -height     => 20,
-        -padx       => 4,
-        -background => 'white', 		#Background color
-        -browsecmd    => \&grid_browsecmd,
-    )->pack(-side=>'top', -fill=>'both', -expand=>1);
+  'HList',
+  -head       => 1,  #Enabling columns headers
+  -columns    => scalar @headers_report, #Number of columns
+  -scrollbars => "oe",
+  -width      => 40,
+  -height     => 20,
+  -padx       => 4,
+  -background => 'white',     #Background color
+  -browsecmd  => \&grid_browsecmd,
+)->pack(-side=>'top', -fill=>'both', -expand=>1);
 
 my $optframe = $mw->LabFrame(
-		-label => "Options", #A frame title
-		-height => 130,   #Frame height
-		#-width 	=> 353,   #Frame width
-	);
+  -label  => "Options", #A frame title
+  -height => 130,       #Frame height
+  #-width => 353,      #Frame width
+);
 my $chb_hideiden = $optframe -> Checkbutton(
-  -text=>"Hide Identical",
-  -state=>"normal",
-  -variable=>\$opt{'hideidentical'},
-  -command =>\&command_hideidentical );
+  -text     => "Hide Identical",
+  -state    => "normal",
+  -variable => \$opt{'hideidentical'},
+  -command  => \&command_hideidentical
+);
 my $chb_igndesc  = $optframe -> Checkbutton(
-  -text=>"Ignore Descriptions",
-  -state=>"disabled",
-  -variable=>\$opt{'ignoredescriptions'},
-  -command =>sub { compare_csvs($CSVFILE1,$CSVFILE2); });
+  -text     => "Ignore Descriptions",
+  -state    => "disabled",
+  -variable => \$opt{'ignoredescriptions'},
+  -command  => sub { compare_csvs($CSVFILE1,$CSVFILE2); }
+);
 my $chb_ignpath  = $optframe -> Checkbutton(
-  -text=>"Ignore Pathnames",
-  -state=>"disabled",
-  -variable=>\$opt{'ignorepathnames'},
-  -command =>sub { compare_csvs($CSVFILE1,$CSVFILE2); });
-my $lbl_onlyin1     = $optframe -> Label(-text=>"0");
-my $lbl_onlyin2     = $optframe -> Label(-text=>"0");
-my $lbl_identical   = $optframe -> Label(-text=>"0");
-my $lbl_duplicates1 = $optframe -> Label(-text=>"0");
-my $lbl_duplicates2 = $optframe -> Label(-text=>"0");
-my $lbl_different   = $optframe -> Label(-text=>"0");
+  -text     => "Ignore Pathnames",
+  -state    => "disabled",
+  -variable => \$opt{'ignorepathnames'},
+  -command  => sub { compare_csvs($CSVFILE1,$CSVFILE2); }
+);
+my $lbl_onlyin1     = $optframe -> Label( -text => "0" );
+my $lbl_onlyin2     = $optframe -> Label( -text => "0" );
+my $lbl_identical   = $optframe -> Label( -text => "0" );
+my $lbl_duplicates1 = $optframe -> Label( -text => "0" );
+my $lbl_duplicates2 = $optframe -> Label( -text => "0" );
+my $lbl_different   = $optframe -> Label( -text => "0" );
 
 my @headers_details = ( "", "Filename", "Size", "Crc32", "Path", "Description"  );
 my $detailsframe = $mw->LabFrame(
-		-label => "Details", #A frame title
-#   -height => 10,   #Frame height
-#   -width  => 0,   #Frame width
-	);
+  -label  => "Details",
+#  -height => 10,
+#  -width  => 0,
+);
 my $grid2 = $detailsframe->HList(
-        -head       => 1, 		#Enabling columns headers
-        -columns    => scalar @headers_details, #Number of columns
-        -width      => 4,
-        -height     => 5,
-        -padx       => 4,
-        -background => 'white', 		#Background color
-    )->pack(-side=>'top', -fill=>'both', -expand=>1);
+  -head       => 1,
+  -columns    => scalar @headers_details,
+  -width      => 4,
+  -height     => 5,
+  -padx       => 4,
+  -background => 'white',
+)->pack(-side=>'top', -fill=>'both', -expand=>1);
 
 my $style_identical = $mw->ItemStyle(
-    'text',
-    -foreground       => 'black',
-    -selectforeground => 'black',
-    -background      => 'white',
-    -selectbackground => 'white',
-#   -font=>'TkFixedFont 8 bold'
-  );
+  'text',
+  -foreground       => 'black',
+  -selectforeground => 'black',
+  -background       => 'white',
+  -selectbackground => 'white',
+#  -font=>'TkFixedFont 8 bold'
+);
 my $style_different = $mw->ItemStyle(
-    'text',
-    -foreground       => 'red',
-    -selectforeground => 'red',
-    -background      => 'white',
-    -selectbackground => 'white',
-  );
+  'text',
+  -foreground       => 'red',
+  -selectforeground => 'red',
+  -background       => 'white',
+  -selectbackground => 'white',
+);
 my $style_duplicate = $mw->ItemStyle(
-    'text',
-    -foreground       => 'orange',
-    -selectforeground => 'orange',
-    -background      => 'white',
-    -selectbackground => 'white',
-  );
+  'text',
+  -foreground       => 'orange',
+  -selectforeground => 'orange',
+  -background       => 'white',
+  -selectbackground => 'white',
+);
 my $style_onlyin = $mw->ItemStyle(
-    'text',
-    -foreground       => 'blue',
-    -selectforeground => 'blue',
-    -background      => 'white',
-    -selectbackground => 'white',
-  );
+  'text',
+  -foreground       => 'blue',
+  -selectforeground => 'blue',
+  -background       => 'white',
+  -selectbackground => 'white',
+);
 
 
 # Geometry Management
 
-$file1_label1  -> grid(-row=>1,-column=>1,-sticky=>"e");
-$file1_path    -> grid(-row=>1,-column=>2,-sticky=>"e");
-$file1_entries -> grid(-row=>1,-column=>3,-sticky=>"ew");
-$file1_label2  -> grid(-row=>1,-column=>4,-sticky=>"e");
-$file2_label1  -> grid(-row=>2,-column=>1,-sticky=>"e");
-$file2_path    -> grid(-row=>2,-column=>2,-sticky=>"e");
-$file2_entries -> grid(-row=>2,-column=>3,-sticky=>"ew");
-$file2_label2  -> grid(-row=>2,-column=>4,-sticky=>"e");
-$chb_hideiden    -> grid(-row=>0,-column=>0,-sticky=>"nw");
-$chb_igndesc     -> grid(-row=>1,-column=>0,-sticky=>"nw");
-$chb_ignpath     -> grid(-row=>2,-column=>0,-sticky=>"nw");
-$lbl_onlyin1     -> grid(-row=>3,-column=>0,-sticky=>"nw");
-$lbl_onlyin2     -> grid(-row=>4,-column=>0,-sticky=>"nw");
-$lbl_identical   -> grid(-row=>5,-column=>0,-sticky=>"nw");
-$lbl_duplicates1 -> grid(-row=>6,-column=>0,-sticky=>"nw");
-$lbl_duplicates2 -> grid(-row=>7,-column=>0,-sticky=>"nw");
-$lbl_different   -> grid(-row=>8,-column=>0,-sticky=>"nw");
+$file1_label1    -> grid( -row=>1, -column=>1, -sticky=>"e"  );
+$file1_path      -> grid( -row=>1, -column=>2, -sticky=>"e"  );
+$file1_entries   -> grid( -row=>1, -column=>3, -sticky=>"ew" );
+$file1_label2    -> grid( -row=>1, -column=>4, -sticky=>"e"  );
+$file2_label1    -> grid( -row=>2, -column=>1, -sticky=>"e"  );
+$file2_path      -> grid( -row=>2, -column=>2, -sticky=>"e"  );
+$file2_entries   -> grid( -row=>2, -column=>3, -sticky=>"ew" );
+$file2_label2    -> grid( -row=>2, -column=>4, -sticky=>"e"  );
+$chb_hideiden    -> grid( -row=>0, -column=>0, -sticky=>"nw" );
+$chb_igndesc     -> grid( -row=>1, -column=>0, -sticky=>"nw" );
+$chb_ignpath     -> grid( -row=>2, -column=>0, -sticky=>"nw" );
+$lbl_onlyin1     -> grid( -row=>3, -column=>0, -sticky=>"nw" );
+$lbl_onlyin2     -> grid( -row=>4, -column=>0, -sticky=>"nw" );
+$lbl_identical   -> grid( -row=>5, -column=>0, -sticky=>"nw" );
+$lbl_duplicates1 -> grid( -row=>6, -column=>0, -sticky=>"nw" );
+$lbl_duplicates2 -> grid( -row=>7, -column=>0, -sticky=>"nw" );
+$lbl_different   -> grid( -row=>8, -column=>0, -sticky=>"nw" );
 
-#$files_frame -> pack(-side=>'top', -fill=>'x', -expand=>1);
-#$lframe      -> pack(-side=>'left', -fill=>'x', -expand=>1);
-#$optframe    -> pack(-side=>'right', -fill=>'both', -expand=>1);
-$files_frame  -> grid(-row=>1,-column=>1,-sticky=>"nw",-columnspan=>2);
-$lframe       -> grid(-row=>2,-column=>1,-sticky=>"nw");
-$optframe     -> grid(-row=>2,-column=>2,-sticky=>"nwes");
-$detailsframe -> grid(-row=>3,-column=>1,-sticky=>"we",-columnspan=>2);
+#$files_frame     -> pack(-side=>'top', -fill=>'x', -expand=>1);
+#$lframe          -> pack(-side=>'left', -fill=>'x', -expand=>1);
+#$optframe        -> pack(-side=>'right', -fill=>'both', -expand=>1);
+$files_frame     -> grid( -row=>1, -column=>1, -sticky=>"nw", -columnspan=>2);
+$lframe          -> grid( -row=>2, -column=>1, -sticky=>"nw"   );
+$optframe        -> grid( -row=>2, -column=>2, -sticky=>"nwes" );
+$detailsframe    -> grid( -row=>3, -column=>1, -sticky=>"we", -columnspan=>2);
 
 for(0..scalar @headers_report - 1) {
- $grid->header( 'create', $_, -text => $headers_report[$_],
-                  -headerbackground => 'gray');
+  $grid->header(
+    'create',
+    $_,
+    -text             => $headers_report[$_],
+    -headerbackground => 'gray'
+  );
 }
 for(0..scalar @headers_details - 1) {
- $grid2->header( 'create', $_, -text => $headers_details[$_],
-                  -headerbackground => 'gray');
+  $grid2->header(
+    'create',
+    $_,
+    -text             => $headers_details[$_],
+    -headerbackground => 'gray'
+  );
 }
 $grid2->delete('all');
 
 
 # Menu
 
-my $menubar = $mw -> Menu(-tearoff=>1);
-$mw -> configure(-menu => $menubar);
-my $mbcinfo = $menubar -> cascade(-label=>"File", -underline=>0,
-                                  -tearoff => 0);
-$mbcinfo -> checkbutton(-label=>"Use Tk's file browser", -variable=>\$opt{'tkbrowser'} );
-my $mbupdate = $mbcinfo -> command ( -label =>"Update FruitCheck!",
-  -underline => 0, -command => sub {
+my $menubar = $mw -> Menu( -tearoff=>1, -relief => "flat" );
+$mw -> configure( -menu => $menubar );
+my $mbcinfo = $menubar -> cascade(
+  -label     => "File",
+  -underline => 0,
+  -tearoff   => 0
+);
+$mbcinfo -> checkbutton(
+  -label     => "Use Tk's file browser",
+  -variable  => \$opt{'tkbrowser'}
+);
+$mbcinfo -> command(
+  -label     => "Create PICCHECK-CSV",
+  -underline => 1,
+  -command   => \&command_createcsv
+);
+$mbcinfo -> command (
+  -label     => "Update FruitCheck!",
+  -underline => 0,
+  -command   => \&command_updatefruitcheck
+);
+$mbcinfo -> command(
+  -label     =>"Exit",
+  -underline => 1,
+  -command   => sub { exit }
+);
+
+
+# Init
+
+
+MainLoop;
+
+
+# Functions
+
+sub command_hideidentical {
+  if ($opt{'hideidentical'}==0) {
+    $chb_igndesc -> configure(-state=>"disabled");
+    $chb_ignpath -> configure(-state=>"disabled");
+    $opt{'ignoredescriptions'} = 0;
+    $opt{'ignorepathnames'} = 0;
+  }
+  else {
+    $chb_igndesc -> configure(-state=>"normal");
+    $chb_ignpath -> configure(-state=>"normal");
+  }
+  compare_csvs($CSVFILE1,$CSVFILE2);
+}
+
+sub grid_browsecmd {
+  my $id = shift;
+  return if !defined($grid);
+  $grid2->delete('all');
+  $grid2->add(0);
+  $grid2->add(1);
+  $grid2->itemCreate(0, 0, -text => "CSV 1:" );
+  $grid2->itemCreate(1, 0, -text => "CSV 2:" );
+  for my $idx (0..1) { # for csv1 and csv2
+    if (defined( $griditems{$id}->[$idx])) {
+      $grid2->itemCreate($idx, 1, -text => $griditems{$id}->[$idx]->{'file'} );
+      $grid2->itemCreate($idx, 2, -text => $griditems{$id}->[$idx]->{'size'} );
+      $grid2->itemCreate($idx, 3, -text => $griditems{$id}->[$idx]->{'crc32'} );
+      $grid2->itemCreate($idx, 4, -text => $griditems{$id}->[$idx]->{'path'} );
+      $grid2->itemCreate($idx, 5, -text => $griditems{$id}->[$idx]->{'comment'} );
+    }
+  }
+}
+
+sub command_updatefruitcheck {
   my $raw = http_get("https://raw.github.com/bitterfruit/fruitchecker/master/VERSION");
 
   if ($raw eq "") {
-    $mw -> messageBox(-type=>"ok",
-    -message=>"Unable to update FruitCheck.\n");
+    $mw -> messageBox(
+      -type    => "ok",
+      -message => "Unable to update FruitCheck.\n"
+    );
     return;
   }
   my ($onlver,$onlmd5,$url) = split ",", $raw;
@@ -280,49 +364,6 @@ my $mbupdate = $mbcinfo -> command ( -label =>"Update FruitCheck!",
       system( "rm -v /tmp/fruitcheck_new" );
   }
   return;
-});
-$mbcinfo -> command(-label =>"Exit", -underline => 1, -command => sub { exit } );
-
-
-# Init
-
-
-MainLoop;
-
-
-# Functions
-
-sub command_hideidentical {
-  if ($opt{'hideidentical'}==0) {
-    $chb_igndesc -> configure(-state=>"disabled");
-    $chb_ignpath -> configure(-state=>"disabled");
-    $opt{'ignoredescriptions'} = 0;
-    $opt{'ignorepathnames'} = 0;
-  }
-  else {
-    $chb_igndesc -> configure(-state=>"normal");
-    $chb_ignpath -> configure(-state=>"normal");
-  }
-  compare_csvs($CSVFILE1,$CSVFILE2);
-}
-
-sub grid_browsecmd {
-  my $id = shift;
-  return if !defined($grid);
-  $grid2->delete('all');
-  $grid2->add(0);
-  $grid2->add(1);
-  $grid2->itemCreate(0, 0, -text => "CSV 1:" );
-  $grid2->itemCreate(1, 0, -text => "CSV 2:" );
-  for my $idx (0..1) { # for csv1 and csv2
-    if (defined( $griditems{$id}->[$idx])) {
-      $grid2->itemCreate($idx, 1, -text => $griditems{$id}->[$idx]->{'file'} );
-      $grid2->itemCreate($idx, 2, -text => $griditems{$id}->[$idx]->{'size'} );
-      $grid2->itemCreate($idx, 3, -text => $griditems{$id}->[$idx]->{'crc32'} );
-      $grid2->itemCreate($idx, 4, -text => $griditems{$id}->[$idx]->{'path'} );
-      $grid2->itemCreate($idx, 5, -text => $griditems{$id}->[$idx]->{'comment'} );
-    }
-  }
 }
 
 sub browse_callback {
@@ -346,7 +387,7 @@ sub browse_callback {
   else {
     if ( $opt{'tkbrowser'}==0 ) {
       #http://stackoverflow.com/questions/251694/how-can-i-check-if-i-have-a-perl-module-before-using-it
-		  eval {
+      eval {
         require Win32::GUI;
         $startdir = win_path($startdir) if $path ne "";
         print $startdir."\n";  print $path."\n\n";
@@ -407,6 +448,81 @@ sub browse_callback {
   return;  
 }
 
+sub command_createcsv {
+  printdeb(1, "fruitcheck::command_createcsv()\n");
+  my $mwtl = $mw->Toplevel(
+    -title  => "Create a PICCHECK compatible CSV",
+    -height => 10,
+    -width  => 400,
+    -bd     => 5
+  );
+  my $lbl_dir  = $mwtl -> Label (
+    -text   => "Directory:"
+  )->pack( -side => 'left' );
+  my $btn_path = $mwtl -> Button(
+    -text    => "",
+    -width   => 80,
+    -height  => 1,
+    -relief  => "sunken", # raised, sunken, flat, ridge, solid, or groove
+
+  )->pack( -side => 'left' );
+  $mwtl -> Button (
+    -text => "Create",
+    -command => sub {
+      my $path = $btn_path->cget(-text);
+      if ( $path ne "" && -d "$path") {
+        printdeb(1,"Do something to directory\n");
+      }
+    }
+  )->pack( -side => 'left' );
+  $btn_path -> configure (
+    -command => sub{ 
+      my $path = browseforfolder("");
+      $btn_path->configure(-text=>$path);
+      print "Path $path\n";
+    },
+  );
+}
+
+
+sub browseforfolder {
+  my $startdir = shift;
+  printdeb(1,"fruitcheck::fileselector_window($startdir)\n");
+  my $path = "";
+  my $hasWin32GUI = 0; # has Win32::GUI test
+  if (!isCygwin() && $opt{'tkbrowser'}==0 && (-f "/usr/bin/zenity") ) {
+    open(PS, "/usr/bin/zenity --file-selection --directory --filename='$startdir' --title=\"Select a Source Directory\" --window-icon=/usr/share/pixmaps/ZIP-File-icon_48.png |") || die "Failed $!\n";
+    $path=<PS>;
+    chomp $path;
+    return $path;
+  }
+  else {
+    if ( $opt{'tkbrowser'}==0 ) {
+      #http://stackoverflow.com/questions/251694/how-can-i-check-if-i-have-a-perl-module-before-using-it
+      eval {
+        require Win32::GUI;
+        $startdir = win_path($startdir) if $path ne "";
+        print $startdir."\n";  print $path."\n\n";
+        $path = Win32::GUI::BrowseForFolder( -root => 0x0000 , -editbox => 1,
+                                           -directory => $startdir, -title => "Select a Source Directory",
+                                           -includefiles=>1, -addexstyle =>"WS_EX_TOPMOST");
+      };
+      unless($@)
+      {
+        $path = cyg_path($path);
+        printdeb(1, "Win32-Gui Loaded successfully $path\n");
+        if ( $path ne "" ) {
+          $path  = encode("windows-1252", $path);
+        }
+        #$hasWin32GUI=1;
+        return $path;
+      }
+    }
+    my @types = (["CSV files", [qw/.csv/]], ["All files", '*'] );
+    $path = $mw->getOpenFile(-initialdir=>$startdir, -filetypes => \@types) if !$hasWin32GUI;
+    return $path;
+  }
+}
 
 sub count_entries {
   my $file12 = shift;
@@ -569,7 +685,7 @@ sub http_get {
     require LWP::UserAgent;
     require LWP::Protocol::https;
     my $ua2 = LWP::UserAgent->new(timeout => 60, agent => 'fruitcheck $version');
-	
+  
   };
   unless($@)
   {
@@ -628,7 +744,6 @@ sub http_get {
   }
 }
 
-
 sub cyg_path {
   my $path = shift || "";
   printdeb(2, "fruitcheck::cyg_path('$path') -> ");
@@ -637,26 +752,6 @@ sub cyg_path {
   printdeb(2, "$path\n");
   return $path;
 }
-
-#sub translate_cygpath {
-#  my($cygpath) = @_;
-#  my($winpath);
-#  if(isCygwin()) {
-#    if (defined(@cygpaths)) {
-#      for my $idx (0...$#cygpaths) {
-#        return $winpaths[$idx] if $cygpaths[$idx] eq $cygpath;
-#      }
-#    }
-#    $winpath = qx/cygpath -w \'$cygpath\'/;
-#    chomp($winpath);
-#    push @cygpaths, $cygpath;
-#    push @winpaths, $winpath;
-#    printdeb(2, "fruitcheck::translate_cygpath() -> $winpath\n");
-#    return $winpath;
-#  }
-#  printdeb(2, "fruitcheck::translate_cygpath() -> $cygpath\n");
-#  return $cygpath;
-#}
 
 sub win_path {
   printdeb(2, "fruitcheck::win_path()\n" );
@@ -691,6 +786,6 @@ sub printdeb {
 }
 
 sub check_dir {
-	my ($dir) = @_;
-	mkpath($dir, 0, 0755) if (! -d $dir);
+  my ($dir) = @_;
+  mkpath($dir, 0, 0755) if (! -d $dir);
 }
