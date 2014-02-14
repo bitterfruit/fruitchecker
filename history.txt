@@ -1,0 +1,12 @@
+history.txt
+
+0.05 (20140214)
+- New tool: Create PICCHECK-Compatible-CSV tool.
+- Option to choose old fashion Tk openFile/chooseDirectory dialogs.
+- Matching algo not complete yet.
+
+0.04 (20140209)
+- First working copy
+- Matches identical by matching both Crc32 and Size to avoid collision.
+  PICCHECK matches filenames at first and then looks for differences.
+  FruitCheck's matching algo isn't complete.
