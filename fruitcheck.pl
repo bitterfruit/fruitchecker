@@ -68,13 +68,13 @@ if ( isCygwin() && ! -f "/tmp/.X0-lock" ) {
   sleep(1);
 }
 my $mw = new MainWindow( title => "FruitCheck $version" );
-$mw->resizable(0,0); # no-resizeable
+#$mw->resizable(0,0); # no-resizeable
 $mw->optionAdd('*font', 'Helvetica 9');
 
 my $files_frame   = $mw -> Frame();
 my $file1_label1  = $files_frame -> Label( -text=>"CSV file 1:" );
 my $file1_path    = $files_frame -> Button(
-  -width   => 50,
+  -width   => 80,
   -height  => 1,
   -relief  => "sunken",
   -command => sub{ browse_callback("file1"); },
@@ -84,7 +84,7 @@ my $file1_entries = $files_frame -> Label( -text => "0"          );
 my $file1_label2  = $files_frame -> Label( -text => "entries"    );
 my $file2_label1  = $files_frame -> Label( -text => "CSV file 2:");
 my $file2_path    = $files_frame -> Button(
-  -width   => 50,
+  -width   => 80,
   -height  => 1,
   -relief  => "sunken",
   -command => sub{ browse_callback("file2"); },
@@ -105,8 +105,8 @@ my $grid = $lframe->Scrolled(
   -head       => 1,  #Enabling columns headers
   -columns    => scalar @headers_report, #Number of columns
   -scrollbars => "oe",
-  -width      => 40,
-  -height     => 20,
+  -width      => 80,
+  #-height     => 20,
   -padx       => 4,
   -background => 'white',     #Background color
   -browsecmd  => \&grid_browsecmd,
@@ -114,7 +114,7 @@ my $grid = $lframe->Scrolled(
 
 my $optframe = $mw->LabFrame(
   -label  => "Options", #A frame title
-  -height => 130,       #Frame height
+  #-height => 130,       #Frame height
   #-width => 353,      #Frame width
 );
 my $chb_hideiden = $optframe -> Checkbutton(
@@ -191,30 +191,31 @@ my $style_onlyin = $mw->ItemStyle(
 # Geometry Management
 
 $file1_label1    -> grid( -row=>1, -column=>1, -sticky=>"e"  );
-$file1_path      -> grid( -row=>1, -column=>2, -sticky=>"e"  );
-$file1_entries   -> grid( -row=>1, -column=>3, -sticky=>"ew" );
-$file1_label2    -> grid( -row=>1, -column=>4, -sticky=>"e"  );
+$file1_path      -> grid( -row=>1, -column=>2, -sticky=>"we"  );
+$file1_entries   -> grid( -row=>1, -column=>3, -sticky=>"we" );
+$file1_label2    -> grid( -row=>1, -column=>4, -sticky=>"w"  );
 $file2_label1    -> grid( -row=>2, -column=>1, -sticky=>"e"  );
-$file2_path      -> grid( -row=>2, -column=>2, -sticky=>"e"  );
-$file2_entries   -> grid( -row=>2, -column=>3, -sticky=>"ew" );
-$file2_label2    -> grid( -row=>2, -column=>4, -sticky=>"e"  );
-$chb_hideiden    -> grid( -row=>0, -column=>0, -sticky=>"nw" );
-$chb_igndesc     -> grid( -row=>1, -column=>0, -sticky=>"nw" );
-$chb_ignpath     -> grid( -row=>2, -column=>0, -sticky=>"nw" );
-$lbl_onlyin1     -> grid( -row=>3, -column=>0, -sticky=>"nw" );
-$lbl_onlyin2     -> grid( -row=>4, -column=>0, -sticky=>"nw" );
-$lbl_identical   -> grid( -row=>5, -column=>0, -sticky=>"nw" );
-$lbl_duplicates1 -> grid( -row=>6, -column=>0, -sticky=>"nw" );
-$lbl_duplicates2 -> grid( -row=>7, -column=>0, -sticky=>"nw" );
-$lbl_different   -> grid( -row=>8, -column=>0, -sticky=>"nw" );
+$file2_path      -> grid( -row=>2, -column=>2, -sticky=>"we"  );
+$file2_entries   -> grid( -row=>2, -column=>3, -sticky=>"we" );
+$file2_label2    -> grid( -row=>2, -column=>4, -sticky=>"w"  );
+$chb_hideiden    -> grid( -row=>1, -column=>1, -sticky=>"nw" );
+$chb_igndesc     -> grid( -row=>2, -column=>1, -sticky=>"nw" );
+$chb_ignpath     -> grid( -row=>3, -column=>1, -sticky=>"nw" );
+$lbl_onlyin1     -> grid( -row=>4, -column=>1, -sticky=>"nw" );
+$lbl_onlyin2     -> grid( -row=>5, -column=>1, -sticky=>"nw" );
+$lbl_identical   -> grid( -row=>6, -column=>1, -sticky=>"nw" );
+$lbl_duplicates1 -> grid( -row=>7, -column=>1, -sticky=>"nw" );
+$lbl_duplicates2 -> grid( -row=>8, -column=>1, -sticky=>"nw" );
+$lbl_different   -> grid( -row=>9, -column=>1, -sticky=>"nw" );
 
-#$files_frame     -> pack(-side=>'top', -fill=>'x', -expand=>1);
-#$lframe          -> pack(-side=>'left', -fill=>'x', -expand=>1);
-#$optframe        -> pack(-side=>'right', -fill=>'both', -expand=>1);
-$files_frame     -> grid( -row=>1, -column=>1, -sticky=>"nw", -columnspan=>2);
-$lframe          -> grid( -row=>2, -column=>1, -sticky=>"nw"   );
-$optframe        -> grid( -row=>2, -column=>2, -sticky=>"nwes" );
-$detailsframe    -> grid( -row=>3, -column=>1, -sticky=>"we", -columnspan=>2);
+$files_frame     -> pack(-side=>'top', -fill=>'x', -expand=>0);
+$detailsframe    -> pack(-side=>'bottom', -fill=>'x', -expand=>0);
+$lframe          -> pack(-side=>'left', -fill=>'both', -expand=>1);
+$optframe        -> pack(-side=>'left', -fill=>'both', -expand=>1);
+#$files_frame     -> grid( -row=>1, -column=>1, -sticky=>"nsew", -columnspan=>2);
+#$lframe          -> grid( -row=>2, -column=>1, -sticky=>"nw"   );
+#$optframe        -> grid( -row=>2, -column=>2, -sticky=>"nwes" );
+#$detailsframe    -> grid( -row=>3, -column=>1, -sticky=>"we", -columnspan=>2);
 
 for(0..scalar @headers_report - 1) {
   $grid->header(
@@ -455,33 +456,47 @@ sub command_createcsv {
   my $mwtl = $mw->Toplevel(
     -title  => "Create a PICCHECK compatible CSV",
     -height => 10,
-    -width  => 400,
+    -width  => 100,
     -bd     => 5
   );
-  my $lbl_dir  = $mwtl -> Label (
+  my $mwtl_topframe = $mwtl->Frame();
+  my $lbl_dir  = $mwtl_topframe -> Label (
     -text   => "Directory:"
-  )->pack( -side => 'left' );
-  my $btn_path = $mwtl -> Button(
+  )->pack( -side => 'left', -fill=>'x', -expand=>0);
+  my $btn_path = $mwtl_topframe -> Button(
     -text    => "",
     -width   => 80,
     -height  => 1,
     -relief  => "sunken", # raised, sunken, flat, ridge, solid, or groove
-
-  )->pack( -side => 'left' );
-  my $btn_create = $mwtl -> Button (
+  )->pack( -side => 'left', -fill=>'x', -expand=>1 );
+  my $btn_create = $mwtl_topframe -> Button (
     -text => "Create",
-  )->pack( -side => 'left' );
+  )->pack( -side => 'left',-fill=>'x', -expand=>0 );
+  $mwtl_topframe->pack(-side => 'top', -fill=>'x', -expand=>1);
+  my $mwtl_frame = $mwtl -> Frame () -> pack (-side=>'bottom', -fill=>'both', -expand=>1);
+  my $lbl_status = $mwtl_frame -> Label (
+    -text => "",
+	-width => 80
+  )->pack( -side => 'bottom' );
   $btn_create -> configure(
     -command => sub {
       my $path = $btn_path->cget(-text);
       if ( $path ne "" && -d $path) {
         printdeb(1,"Do something to $path \n");
-        $btn_create -> configure( -state=>"disabled");
+        $btn_create -> configure( -state=>"disabled" );
         $mwtl -> update();
+        my $basepath = $path;
+        $basepath =~ s/\/$//;
         my %filehash;
         list_files_recursive($path,\%filehash);
-        printdeb(2,"filehash size: ". scalar(keys %filehash) ."\n");
+		my ($i, $n) = (0, scalar(keys %filehash));
+		my ($basefoldername) = ($basepath =~ /.*\/(.*?)$/);
+        printdeb(2,"filehash size: $n and basefoldername: $basefoldername\n");
+		open(FILE, ">", "$basepath/$basefoldername.csv") or die "$!";
         foreach my $filepath ( sort keys %filehash ) {
+		  printdeb(3,"foreach_filepath $i/$n $filepath\n");
+		  $lbl_status->configure(-text=>"$i/$n");
+		  $mwtl->update();
           my $fh = FileHandle->new();
           if ( !$fh->open( $filepath, 'r' ) ) {
               warn "$0: $!\n";
@@ -497,23 +512,25 @@ sub command_createcsv {
           $crc = uc(sprintf( "%08x", $crc ));
           my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,
               $atime,$mtime,$ctime,$blksize,$blocks) = stat($filepath);
-          my $relative_path = "\\";
           $filepath =~ s/\//\\/g;
-          if ($filepath =~ /\\/g) {
-            ($relative_path, $filepath) = ($filepath =~ /^(.*\\)(.*?)$/g);
-            $relative_path = "\\".$relative_path;
-          }
-          print      "$filepath,$size,$crc,$relative_path,\n";
-          #print FILE "$file,$size,$crc,$relative_path,\n";
+          my $relative_path = substr $filepath, length($basepath)+1;
+          my ($relative_dir, $file) =  ($relative_path =~ /^(.*\\)?(.*)?$/);
+          $relative_dir = "" unless defined($relative_dir);
+          print      "$file,$size,$crc,\\$relative_dir,\n";
+          print FILE "$file,$size,$crc,\\$relative_dir,\n";
+          $i++;
         }
+        close(FILE);
         $btn_create -> configure( -state=>"active");
+        $lbl_status->configure(-text=>"");
+		$mwtl->update();
       }
     }
   );
   $btn_path -> configure ( # late configuration of this button.
     -command => sub{ 
       my $path = browseforfolder( $btn_path->cget(-text) );
-      $btn_path->configure(-text=>$path);
+      $btn_path->configure(-text=>$path) unless $path eq "";
       print "Path $path\n";
     },
   );
