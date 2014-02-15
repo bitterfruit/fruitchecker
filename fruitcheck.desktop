@@ -2,7 +2,7 @@
 [Desktop Entry]
 Version=1.0
 Type=Application
-Terminal=true
+Terminal=false
 Icon[en_US]=Cherry-icon_48
 Name[en_US]=FruitCheck
 Exec=fruitcheck
