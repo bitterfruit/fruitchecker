@@ -1,0 +1,10 @@
+
+[Desktop Entry]
+Version=1.0
+Type=Application
+Terminal=true
+Icon[en_US]=Cherry-icon_48
+Name[en_US]=fruitcheck
+Exec=fruitpeeler
+Name=fruitpeeler
+Icon=/usr/share/pixmaps/Cherry-icon_48.png
