@@ -8,6 +8,7 @@ installonubuntu () {
   }
   installperl=0
   installperltk=0
+  installlibarc=0
   installzenity=0
   if hash perl >/dev/null 2>&1; then
     echo "You have perl ... OK"
@@ -26,6 +27,15 @@ installonubuntu () {
     echo ""
     [[ "$answer" == "y" ]] && { installperltk=1; } || { installfailed; }
   fi
+  if dpkg -s libarchive-zip-perl 2>&1|grep "Status: install ok" >/dev/null; then
+    echo "You have libarchive-zip-perl ... OK"
+  else
+    answer=""
+    read -n1 -p"The package libarchive-zip-perl is needed, install it? (y/n) " answer
+    echo ""
+    [[ "$answer" == "y" ]] && { installlibarc=1; } || { installfailed; }
+  fi
+
   if dpkg -s zenity 2>&1|grep "Status: install ok" >/dev/null; then
     echo "You have zenity ... OK"
   else
@@ -38,6 +48,7 @@ installonubuntu () {
   fi
   [[ $installperl -eq 1 ]] && { apt-get install perl; }
   [[ $installperltk -eq 1 ]] && { apt-get install perl-tk; }
+  [[ $installlibarc -eq 1 ]] && { apt-get install libarchive-zip-perl; }
   [[ $installzenity -eq 1 ]] && { apt-get install zenity; }
 
   echo "Installing fruitcheck -> /usr/local/bin/fruitcheck"
@@ -48,6 +59,7 @@ installonubuntu () {
     cp -v ./Cherry-icon_48.png /usr/share/pixmaps || { echo "Unable to copy icon image"; }
     if [ -d $HOME/Desktop ] ; then
       cp -v ./fruitcheck.desktop $HOME/Desktop
+      cp -v ./fruitcheck.desktop /usr/share/applications
       chmod 715 $HOME/Desktop/fruitcheck.desktop
       chown $SUDO_USER $HOME/Desktop/fruitcheck.desktop
     else

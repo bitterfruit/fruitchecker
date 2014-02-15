@@ -7,6 +7,7 @@ uninstallonubuntu () {
   }
   rm -v /usr/local/bin/fruitcheck
   rm -v "$HOME/Desktop/fruitcheck.desktop"
+  # rm -v /usr/share/applications/fruitcheck.desktop
   # rm -v /usr/share/pixmaps/Cherry-icon_48.png
 }
 
