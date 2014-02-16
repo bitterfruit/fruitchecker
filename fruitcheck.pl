@@ -26,7 +26,7 @@ use MIME::Base64;
 
 # Global Variables
 
-my $version = "0.05 (20140214)";
+my $version = "0.06 (20140216)";
 my $VerboseLevel = 0;  # show verbose output, 0=none, 3=shitload
 foreach (@ARGV) {
   $VerboseLevel = $1 if /^(?:--verbose=|-v)(\d+)/ && $1<4;
