@@ -1,5 +1,8 @@
 history.txt
 
+0.06 (20140216)
+- Added option to ignore case in filenames.
+
 0.05 (20140214)
 - New tool: Create PICCHECK-Compatible-CSV tool.
 - Option to choose old fashion Tk openFile/chooseDirectory dialogs.

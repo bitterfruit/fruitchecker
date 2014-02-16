@@ -43,6 +43,7 @@ my $CSVFILE2="";
 my $file1count=0;
 my $file2count=0;
 my %opt;
+$opt{'ignorecase'} = 0;
 $opt{'hideidentical'} = 0;
 $opt{'ignoredescriptions'} = 0;
 $opt{'ignorepathnames'} = 0;
@@ -116,6 +117,12 @@ my $optframe = $mw->LabFrame(
   -label  => "Options", #A frame title
   #-height => 130,       #Frame height
   #-width => 353,      #Frame width
+);
+my $chb_ignorecase = $optframe -> Checkbutton(
+  -text     => "Ignore Case",
+  -state    => "normal",
+  -variable => \$opt{'ignorecase'},
+  -command  => sub { compare_csvs($CSVFILE1,$CSVFILE2); }
 );
 my $chb_hideiden = $optframe -> Checkbutton(
   -text     => "Hide Identical",
@@ -198,15 +205,16 @@ $file2_label1    -> grid( -row=>2, -column=>1, -sticky=>"e"  );
 $file2_path      -> grid( -row=>2, -column=>2, -sticky=>"we"  );
 $file2_entries   -> grid( -row=>2, -column=>3, -sticky=>"we" );
 $file2_label2    -> grid( -row=>2, -column=>4, -sticky=>"w"  );
-$chb_hideiden    -> grid( -row=>1, -column=>1, -sticky=>"nw" );
-$chb_igndesc     -> grid( -row=>2, -column=>1, -sticky=>"nw" );
-$chb_ignpath     -> grid( -row=>3, -column=>1, -sticky=>"nw" );
-$lbl_onlyin1     -> grid( -row=>4, -column=>1, -sticky=>"nw" );
-$lbl_onlyin2     -> grid( -row=>5, -column=>1, -sticky=>"nw" );
-$lbl_identical   -> grid( -row=>6, -column=>1, -sticky=>"nw" );
-$lbl_duplicates1 -> grid( -row=>7, -column=>1, -sticky=>"nw" );
-$lbl_duplicates2 -> grid( -row=>8, -column=>1, -sticky=>"nw" );
-$lbl_different   -> grid( -row=>9, -column=>1, -sticky=>"nw" );
+$chb_ignorecase  -> grid( -row=>1, -column=>1, -sticky=>"nw" );
+$chb_hideiden    -> grid( -row=>2, -column=>1, -sticky=>"nw" );
+$chb_igndesc     -> grid( -row=>3, -column=>1, -sticky=>"nw" );
+$chb_ignpath     -> grid( -row=>4, -column=>1, -sticky=>"nw" );
+$lbl_onlyin1     -> grid( -row=>5, -column=>1, -sticky=>"nw" );
+$lbl_onlyin2     -> grid( -row=>6, -column=>1, -sticky=>"nw" );
+$lbl_identical   -> grid( -row=>7, -column=>1, -sticky=>"nw" );
+$lbl_duplicates1 -> grid( -row=>9, -column=>1, -sticky=>"nw" );
+$lbl_duplicates2 -> grid( -row=>10, -column=>1, -sticky=>"nw" );
+$lbl_different   -> grid( -row=>11, -column=>1, -sticky=>"nw" );
 
 $files_frame     -> pack(-side=>'top', -fill=>'x', -expand=>0);
 $detailsframe    -> pack(-side=>'bottom', -fill=>'x', -expand=>0);
@@ -651,7 +659,8 @@ sub compare_two {
   my $file2 = shift;
   my $lnum_ref = shift;
   printdeb(1,"fruitcheck::compare_two(".$file1->{'file'}.",".$file2->{'file'}.",$$lnum_ref)\n");
-  if ( $file1->{'file'} eq $file2->{'file'} ) { # same filename
+  if ( $file1->{'file'} eq $file2->{'file'} ||
+       ( $opt{'ignorecase'}==1 && lc($file1->{'file'}) eq lc($file2->{'file'}))) { # same filename
     if ($file1->{'csvfile'} eq $file2->{'csvfile'}) {
       print $file1->{'file'}. "\tduplicate in csv".$file1->{'csvfile'}."\n";
       $grid->add($$lnum_ref);
