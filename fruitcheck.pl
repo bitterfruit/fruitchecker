@@ -26,7 +26,7 @@ use MIME::Base64;
 
 # Global Variables
 
-my $version = "0.06 (20140216)";
+my $version = "0.07 (20140219)";
 my $VerboseLevel = 0;  # show verbose output, 0=none, 3=shitload
 foreach (@ARGV) {
   $VerboseLevel = $1 if /^(?:--verbose=|-v)(\d+)/ && $1<4;
@@ -821,7 +821,7 @@ sub list_files_recursive {
     printdeb (2, "fr..::list_files_recursive() $level $nkeys -> $path\n");
   }
   return if $level >= $maxdepth;
-  return if $nkeys > 1000;
+  #return if $nkeys > 1000;
   my @dirs =();
   opendir(DIR, $path) or print "Error: $!\n";
   while (defined(my $dir = readdir(DIR))) {

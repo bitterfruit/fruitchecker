@@ -1,5 +1,9 @@
 history.txt
 
+0.07 (20140219)
+- Fixed the Create CSV tool. Forgot to remove a limit of max no.
+  of files in a directory tree.
+
 0.06 (20140216)
 - Added option to ignore case in filenames.
 
