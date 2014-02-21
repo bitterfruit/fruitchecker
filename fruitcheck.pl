@@ -26,7 +26,7 @@ use MIME::Base64;
 
 # Global Variables
 
-my $version = "0.07 (20140219)";
+my $version = "0.08 ()";
 my $VerboseLevel = 0;  # show verbose output, 0=none, 3=shitload
 foreach (@ARGV) {
   $VerboseLevel = $1 if /^(?:--verbose=|-v)(\d+)/ && $1<4;
@@ -118,6 +118,9 @@ my $optframe = $mw->LabFrame(
   #-height => 130,       #Frame height
   #-width => 353,      #Frame width
 );
+my $optmenu = $optframe -> Optionmenu(
+	-options => [['crc+size'=>1],['filenames'=>2]]
+);
 my $chb_ignorecase = $optframe -> Checkbutton(
   -text     => "Ignore Case",
   -state    => "normal",
@@ -205,13 +208,14 @@ $file2_label1    -> grid( -row=>2, -column=>1, -sticky=>"e"  );
 $file2_path      -> grid( -row=>2, -column=>2, -sticky=>"we"  );
 $file2_entries   -> grid( -row=>2, -column=>3, -sticky=>"we" );
 $file2_label2    -> grid( -row=>2, -column=>4, -sticky=>"w"  );
-$chb_ignorecase  -> grid( -row=>1, -column=>1, -sticky=>"nw" );
-$chb_hideiden    -> grid( -row=>2, -column=>1, -sticky=>"nw" );
-$chb_igndesc     -> grid( -row=>3, -column=>1, -sticky=>"nw" );
-$chb_ignpath     -> grid( -row=>4, -column=>1, -sticky=>"nw" );
-$lbl_onlyin1     -> grid( -row=>5, -column=>1, -sticky=>"nw" );
-$lbl_onlyin2     -> grid( -row=>6, -column=>1, -sticky=>"nw" );
-$lbl_identical   -> grid( -row=>7, -column=>1, -sticky=>"nw" );
+$optmenu         -> grid( -row=>1, -column=>1, -sticky=>"nw" );
+$chb_ignorecase  -> grid( -row=>2, -column=>1, -sticky=>"nw" );
+$chb_hideiden    -> grid( -row=>3, -column=>1, -sticky=>"nw" );
+$chb_igndesc     -> grid( -row=>4, -column=>1, -sticky=>"nw" );
+$chb_ignpath     -> grid( -row=>5, -column=>1, -sticky=>"nw" );
+$lbl_onlyin1     -> grid( -row=>6, -column=>1, -sticky=>"nw" );
+$lbl_onlyin2     -> grid( -row=>7, -column=>1, -sticky=>"nw" );
+$lbl_identical   -> grid( -row=>8, -column=>1, -sticky=>"nw" );
 $lbl_duplicates1 -> grid( -row=>9, -column=>1, -sticky=>"nw" );
 $lbl_duplicates2 -> grid( -row=>10, -column=>1, -sticky=>"nw" );
 $lbl_different   -> grid( -row=>11, -column=>1, -sticky=>"nw" );
@@ -246,7 +250,10 @@ $grid2->delete('all');
 
 # Menu
 
-my $menubar = $mw -> Menu( -tearoff=>1, -relief => "flat" );
+my $menubar = $mw -> Menu(
+  -tearoff => 1, 
+  -relief => "flat",
+);
 $mw -> configure( -menu => $menubar );
 my $mbcinfo = $menubar -> cascade(
   -label     => "File",
@@ -270,6 +277,7 @@ $mbcinfo -> command (
 $mbcinfo -> command(
   -label     =>"Exit",
   -underline => 1,
+  -activebackground => 'red',
   -command   => sub { exit }
 );
 
